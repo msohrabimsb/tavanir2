@@ -1,0 +1,31 @@
+﻿@model LoginViewModel
+@{
+    ViewData["Title"] = "ورود";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="col col-7">
+    <form class="smart-form" id="account" method="post" asp-action="Index">
+        <fieldset>
+            <section>
+                <label class="label" asp-for="Username"></label>
+                <label class="input">
+                    <input asp-for="Username" class="ltr text-center" />
+                </label>
+                <span asp-validation-for="Username" class="text-danger"></span>
+            </section>
+            <section>
+                <label class="label" asp-for="Password"></label>
+                <label class="input">
+                    <input asp-for="Password" class="ltr text-center" autocomplete="off" />
+                </label>
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </section>
+        </fieldset>
+        <footer>
+            <button type="submit" class="btn btn-primary">ورود</button>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        </footer>
+    </form>
+</div>

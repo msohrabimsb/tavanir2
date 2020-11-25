@@ -1,0 +1,77 @@
+﻿@model RegisterAccountViewModel
+@{
+    ViewData["Title"] = "ثبت شرکت";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div>
+    <form class="smart-form" id="account" method="post" asp-action="Register">
+        <fieldset>
+            <div class="row">
+                <section class="col col-6">
+                    <label class="label" asp-for="Code"></label>
+                    <label class="input">
+                        <input asp-for="Code" class="ltr text-center" />
+                    </label>
+                    <span asp-validation-for="Code" class="text-danger"></span>
+                </section>
+                <section class="col col-6">
+                    <label class="label" asp-for="Name"></label>
+                    <label class="input">
+                        <input asp-for="Name" class="rtl text-center" />
+                    </label>
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </section>
+            </div>
+            <div class="row">
+                <section class="col col-6">
+                    <label class="label" asp-for="Username"></label>
+                    <label class="input">
+                        <input asp-for="Username" class="ltr text-center" />
+                    </label>
+                    <span asp-validation-for="Username" class="text-danger"></span>
+                </section>
+                <section class="col col-6">
+                    <label class="label" asp-for="Password"></label>
+                    <label class="input">
+                        <input asp-for="Password" class="ltr text-center" />
+                    </label>
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </section>
+            </div>
+            <div class="row">
+                <section class="col col-6">
+                    <label class="label">موقعیت مکانی</label>
+                    <select id="LocationId" name="LocationId" class="select2 form-control" style="width:100%;">
+                        @if (Model.Locations?.Any() ?? false)
+                        {
+                            foreach (var item in Model.Locations)
+                            {
+                                <option value="@item.LocationId">@item.Name</option>
+                            }
+                        }
+                    </select>
+                    <span asp-validation-for="LocationId" class="text-danger"></span>
+                </section>
+                <section class="col col-6">
+                    <label class="label" asp-for="Description"></label>
+                    <label class="input">
+                        <textarea asp-for="Description"></textarea>
+                    </label>
+                    <span asp-validation-for="Description" class="text-danger" style="width:100%;"></span>
+                </section>
+            </div>
+        </fieldset>
+        <footer>
+            <button type="submit" class="btn btn-primary">ورود</button>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        </footer>
+    </form>
+</div>
+
+<script>
+    $(function () {
+        $('.select2').select2();
+    });
+</script>

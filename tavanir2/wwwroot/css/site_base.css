@@ -1,0 +1,64 @@
+﻿#loadingProcess {
+    position: fixed;
+    z-index: 99999;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(250,250,250,.9);
+}
+
+    #loadingProcess > div {
+        position: absolute;
+        top: 45%;
+        left: 45%;
+    }
+
+#dash_content {
+    direction: ltr !important;
+}
+
+div[aria-label="نمایشگر"] {
+    display: none !important;
+}
+
+.dx-button-mode-contained i.fa {
+    font-size: 17px;
+    margin-left: 5px;
+}
+
+.remaining_to_auto_refresh, .remaining_to_auto_refresh > span {
+    display: inline-block;
+    direction: rtl;
+    font-size: 13pt;
+    font-family: 'B Nazanin';
+    cursor: help;
+}
+
+.remaining_to_auto_refresh {
+    margin-right: 15px;
+}
+
+#main {
+    left: 0 !important;
+    right: 0 !important;
+}
+
+#tbl_parameters tbody tr:hover {
+    background-color: cadetblue;
+    color: white;
+    cursor: pointer;
+}
+
+.popover {
+    z-index: 99999 !important;
+    direction: ltr;
+}
+
+tr.dx-area-row-cell div.dx-scrollable-content table {
+    width: auto !important;
+}
+
+.dx-pivotgrid .dx-word-wrap .dx-pivotgrid-collapsed > span,
+.dx-pivotgrid .dx-word-wrap .dx-pivotgrid-expanded > span,
+.dx-pivotgrid .dx-word-wrap .dx-pivotgrid-expanded  + .dx-last-cell > span {
+    white-space: nowrap !important;
+}

@@ -1,0 +1,154 @@
+﻿<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"] - BI توانیر</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <!-- #CSS Links -->
+    <!-- Basic Styles -->
+    <link rel="stylesheet" type="text/css" media="screen" href="~/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="~/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="~/css/font-per.min.css" />
+
+    <!-- SmartAdmin Styles : Caution! DO NOT change the order -->
+    <link rel="stylesheet" type="text/css" media="screen" href="~/css/smartadmin-production-plugins.min.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="~/css/smartadmin-production.min.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="~/css/smartadmin-skins.min.css" />
+
+    <!-- SmartAdmin RTL Support -->
+    <link rel="stylesheet" type="text/css" media="screen" href="~/css/smartadmin-rtl.min.css" />
+
+    <!-- We recommend you use "your_style.css" to override SmartAdmin
+         specific styles this will also ensure you retrain your customization with each SmartAdmin update.
+    <link rel="stylesheet" type="text/css" media="screen" href="~/css/your_style.css"> -->
+    <!-- Demo purpose only: goes with demo.js, you can delete this css when designing your own WebApp -->
+    <link rel="stylesheet" type="text/css" media="screen" href="~/css/demo.min.css" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="~/lib/jBox/jBox.all.min.css" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="~/css/site_base.css" />
+
+    <!-- #FAVICONS -->
+    <link rel="shortcut icon" href="~/img/favicon/arianicon.ico" type="image/x-icon" />
+    <link rel="icon" href="~/img/favicon/arianicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body class="smart-rtl fixed-navigation dx-viewport hidden-menu" style="font-family:Tahoma;font-size:14px;">
+    <div id="loadingProcess" style="display:none;">
+        <div>
+            <img alt="لطفاً منتظر بمانید ..." src="~/images/loading.gif" />
+        </div>
+    </div>
+
+    @if (Context.Session.HasKey("LoginToken") && !string.IsNullOrEmpty((string)ViewBag.CompanyName))
+    {
+        <header>
+            <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+                <div class="container">
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                        شرکت: @ViewBag.CompanyName
+                    </button>
+                    <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
+                        <ul class="navbar-nav flex-grow-1">
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">ایمپورت فایل اکسل</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Home" asp-action="Report">پیگیری ایمپورت داده ها</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="@ViewBag.LoginToken">داشبورد</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </header>
+    }
+
+    <div id="main" role="main">
+        <div id="content" style="height:100vh;">
+            @RenderBody()
+        </div>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2020 - آرین نوین رایانه
+        </div>
+    </footer>
+    <!--================================================== -->
+    <!-- PACE LOADER - turn this on if you want ajax loading to show (caution: uses lots of memory on iDevices)-->
+    <script data-pace-options='{ "restartOnRequestAfter": true }' src="~/js/plugin/pace/pace.min.js"></script>
+
+    <!-- Link to Google CDN's jQuery + jQueryUI; fall back to local -->
+    <script src="~/js/libs/jquery-3.4.1.min.js"></script>
+    <script src="~/js/libs/jquery-ui.min.js"></script>
+
+
+    <!-- IMPORTANT: APP CONFIG -->
+    <script src="~/js/app.config.js"></script>
+
+    <!-- JS TOUCH : include this plugin for mobile drag / drop touch events-->
+    <script src="~/js/plugin/jquery-touch/jquery.ui.touch-punch.min.js"></script>
+
+    <!-- BOOTSTRAP JS -->
+    <script src="~/js/bootstrap/bootstrap.min.js"></script>
+
+    <!-- CUSTOM NOTIFICATION -->
+    <script src="~/js/notification/SmartNotification.min.js"></script>
+
+    <!-- JARVIS WIDGETS -->
+    <script src="~/js/smartwidgets/jarvis.widget.min.js"></script>
+
+    <!-- EASY PIE CHARTS -->
+    <script src="~/js/plugin/easy-pie-chart/jquery.easy-pie-chart.min.js"></script>
+
+    <!-- SPARKLINES -->
+    <script src="~/js/plugin/sparkline/jquery.sparkline.min.js"></script>
+
+    <!-- JQUERY VALIDATE -->
+    <script src="~/js/plugin/jquery-validate/jquery.validate.min.js"></script>
+
+    <!-- JQUERY MASKED INPUT -->
+    <script src="~/js/plugin/masked-input/jquery.maskedinput.min.js"></script>
+
+    <!-- JQUERY SELECT2 INPUT -->
+    <script src="~/js/plugin/select2/select2.min.js"></script>
+
+    <!-- JQUERY UI + Bootstrap Slider -->
+    <script src="~/js/plugin/bootstrap-slider/bootstrap-slider.min.js"></script>
+
+    <!-- browser msie issue fix -->
+    <script src="~/js/plugin/msie-fix/jquery.mb.browser.min.js"></script>
+
+    <!-- FastClick: For mobile devices -->
+    <script src="~/js/plugin/fastclick/fastclick.min.js"></script>
+
+    <!--[if IE 8]>
+
+    <h1>Your browser is out of date, please update your browser by going to www.microsoft.com/download</h1>
+
+    <![endif]-->
+    <!-- Demo purpose only -->
+    @*<script src="~/js/demo.min.js"></script>*@
+
+    <!-- MAIN APP JS FILE -->
+    <script src="~/js/app.min.js"></script>
+
+    <!-- ENHANCEMENT PLUGINS : NOT A REQUIREMENT -->
+    <!-- PAGE RELATED PLUGIN(S)
+    <script src="..."></script>-->
+
+    <script src="~/lib/jBox/jBox.all.min.js"></script>
+
+    <script src="~/js/arian/site_base.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
