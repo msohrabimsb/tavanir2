@@ -1,7 +1,74 @@
-﻿@{
+﻿@model Report
+@{
     ViewData["Title"] = "نتیجه ایمپورت فایل اکسل";
 }
 
+@if (!string.IsNullOrEmpty((string)ViewBag.Code))
+{
+    <div>
+        <h1 class="text-success">ایمپورت داده ها از اکسل به کد پیگیری «<span class="text-info">@ViewBag.Code</span>» با موفقیت انجام شد.</h1>
+    </div>
+}
+
 <div>
-    <h1>ایمپورت داده ها از اکسل با کد پیگیری «@ViewBag.Code» با موفقیت انجام شد.</h1>
+    <form class="smart-form" method="post" asp-action="Report" style="width:45%;margin:0 auto;">
+        <fieldset>
+            <section>
+                <label class="label">
+                    <label asp-for="Code"></label>
+                </label>
+                <label class="input">
+                    <input asp-for="Code" class="ltr text-center" />
+                </label>
+                <span asp-validation-for="Code" class="text-danger"></span>
+            </section>
+            <footer>
+                <button type="submit" class="btn btn-success">جستجو</button>
+            </footer>
+        </fieldset>
+    </form>
+    @if (Model?.Result?.CodeFounded ?? false)
+    {
+        <form class="smart-form" style="width:90%;margin:0 auto;">
+            <fieldset>
+                <div class="row mb-1">
+                    <section class="col col-6">
+                        <b class="text-success">تعداد موارد تأیید شده: </b>
+                        <span>@Model.Result.ApprovedCounts</span>
+                    </section>
+                    <section class="col col-6">
+                        <b class="text-danger">تعداد موارد تأیید نشده: </b>
+                        <span>@Model.Result.NotApproveCounts</span>
+                    </section>
+                </div>
+                <section>
+                    <b>لیست موارد تأیید نشده:</b>
+                    <table class="table table-striped table-bordered table-hover text-center" width="100%">
+                        <thead>
+                            <tr>
+                                <th>شماره سطر</th>
+                                <th>نام ستون</th>
+                                <th>مقدار وارد شده</th>
+                                <th>پیغام خطا</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Result.ListNotAproved?.Any() ?? false)
+                            {
+                                foreach (var item in Model.Result.ListNotAproved)
+                                {
+                                    <tr>
+                                        <td>@item.RowIndex</td>
+                                        <td>@item.Name</td>
+                                        <td>@item.RecivedValue</td>
+                                        <td>@item.Message</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </section>
+            </fieldset>
+        </form>
+    }
 </div>

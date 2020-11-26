@@ -3,8 +3,10 @@
     ViewData["Title"] = "ایمپورت فایل اکسل";
 }
 
-<div class="col col-7">
-    <form class="smart-form" method="post" enctype="multipart/form-data" asp-action="Index">
+<h1>@ViewData["Title"]</h1>
+
+<div>
+    <form class="smart-form" method="post" enctype="multipart/form-data" asp-action="Index" style="width:90%;margin:0 auto;">
         <fieldset>
             <section class="col col-6">
                 <label class="label">گروه داده ای</label>
@@ -53,12 +55,12 @@
                 </label>
                 <span asp-validation-for="ColumnsType" class="text-danger"></span>
             </section>
-            <section>
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            </section>
         </fieldset>
         <footer>
-            <button type="submit" class="btn btn-primary">بارگذاری</button>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        </footer>
+        <footer>
+            <button type="submit" class="btn btn-success">بارگذاری</button>
         </footer>
     </form>
 </div>

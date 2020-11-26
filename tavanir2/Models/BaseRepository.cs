@@ -42,7 +42,7 @@ namespace tavanir2.Models
 
         public bool ValidationToken()
         {
-            if (!contextAccessor.HttpContext.Session.HasKey("CompanyId") || !Guid.TryParse(contextAccessor.HttpContext.Session.GetString("CompanyId"), out Guid companyId) || companyId == null)
+            if (!contextAccessor.HttpContext.Session.HasKey("CompanyId") || !Guid.TryParse(contextAccessor.HttpContext.Session.GetString("CompanyId"), out Guid companyId) || companyId == null || Equals(companyId, Guid.Empty))
             {
                 return false;
             }
@@ -51,7 +51,7 @@ namespace tavanir2.Models
                 conn.Query<Guid>("SELECT [Id] FROM [TavanirStage].[Basic].[Companies] WHERE [Id] = @Id",
                     new { @Id = companyId })?.FirstOrDefault());
 
-            if (res.HasValue && res.Value == companyId)
+            if (res.HasValue && !Equals(res.Value, Guid.Empty) && res.Value == companyId)
                 return true;
 
             contextAccessor.HttpContext.Session.Remove("CompanyId");

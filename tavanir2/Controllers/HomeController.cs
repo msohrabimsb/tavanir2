@@ -118,7 +118,7 @@ namespace tavanir2.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, "خطا در آپلود فایل: " + ex.Message.ToString());
+                ModelState.AddModelError(string.Empty, "خطا در آپلود فایل: " + ex.StackTrace.ToString());
             }
 
             try
@@ -168,7 +168,6 @@ namespace tavanir2.Controllers
 
             int i = 0;
             DataMembers item = null;
-            string recivedValue = null;
 
             DateTime receiption = DateTime.Now;
 
@@ -218,9 +217,11 @@ namespace tavanir2.Controllers
                         year = default_year;
                         month = null;
                         dayOfMonth = null;
-                        timeOfDay = "";
+                        timeOfDay = null;
                         for (int j = 0; j < dr.FieldCount; j++)
                         {
+                            string recivedValue = null;
+
                             string val = dr.GetValue(j).ToString();
                             switch (dr.GetName(j))
                             {
@@ -252,7 +253,6 @@ namespace tavanir2.Controllers
                                         {
                                             return $"مقدار روز ({val}) از ماه وارد شده در سطر {i} معتبر نمی‌باشد.";
                                         }
-
                                         dayOfMonth = dayOfMonth2;
                                     }
                                     break;
@@ -284,6 +284,17 @@ namespace tavanir2.Controllers
                                     }
                                     break;
                             }
+
+                            historicalValues.Add(new HistoricalValues()
+                            {
+                                Id = Guid.NewGuid(),
+                                TimeSeriesId = Guid.Empty,
+                                RowIndex = i,
+                                Receiption = receiption,
+                                RecivedValue = recivedValue,
+                                DataMemberId = item.Id,
+                                Approved = "1"
+                            });
                         }
 
                         if (!(year >= 1300 && year <= 9999))
@@ -292,22 +303,41 @@ namespace tavanir2.Controllers
                         }
                         if (dayOfMonth.HasValue)
                         {
-                            if (month.HasValue)
+                            if (!month.HasValue)
                             {
                                 return $"برای سطر {i} مقدار روز ({dayOfMonth.Value}) وارد شده درصورتی که مقدار ماه ای تعریف نشده است.";
                             }
                             if (!((month.Value < 7 && (dayOfMonth.Value >= 1 && dayOfMonth.Value <= 31)) || (month.Value > 6 && (dayOfMonth.Value >= 1 && dayOfMonth.Value <= 30))))
                             {
-                                return $"روز وارد شده ({dayOfMonth.Value}) برای ماه {month.Value} در سطر {i} در بازه مجاز نمی‌باشد.";
+                                return $"مقدار روز وارد شده ({dayOfMonth.Value}) برای ماه ({month.Value}) در سطر {i} در بازه مجاز نمی‌باشد.";
                             }
                         }
 
 
-                        string timeSeries_Id = timeSeries.Where(c => c.Year == year && c.Month == month && c.DayOfMonth == dayOfMonth && c.TimeOfDay == timeOfDay)
-                            .Select(c => c.Id).FirstOrDefault();
-                        if (string.IsNullOrEmpty(timeSeries_Id))
+                        Guid timeSeries_Id = Guid.Empty;
+
+                        if (month.HasValue)
                         {
-                            timeSeries_Id = Guid.NewGuid().ToString();
+                            if (dayOfMonth.HasValue)
+                            {
+                                timeSeries_Id = timeSeries.Where(c => c.Year == year && c.Month.HasValue && c.Month.Value == month.Value && c.DayOfMonth.HasValue && c.DayOfMonth.Value == dayOfMonth.Value && Equals(c.TimeOfDay, timeOfDay))
+                                    .Select(c => c.Id).FirstOrDefault();
+                            }
+                            else
+                            {
+                                timeSeries_Id = timeSeries.Where(c => c.Year == year && c.Month.HasValue && c.Month.Value == month.Value && !c.DayOfMonth.HasValue && Equals(c.TimeOfDay, timeOfDay))
+                                    .Select(c => c.Id).FirstOrDefault();
+                            }
+                        }
+                        else
+                        {
+                            timeSeries_Id = timeSeries.Where(c => c.Year == year && !c.Month.HasValue && !c.DayOfMonth.HasValue && Equals(c.TimeOfDay, timeOfDay))
+                                .Select(c => c.Id).FirstOrDefault();
+                        }
+
+                        if (Equals(timeSeries_Id, Guid.Empty))
+                        {
+                            timeSeries_Id = Guid.NewGuid();
                             timeSeries.Add(new TimeSeries()
                             {
                                 Id = timeSeries_Id,
@@ -325,17 +355,14 @@ namespace tavanir2.Controllers
                             }
                         }
 
-                        historicalValues.Add(new HistoricalValues()
-                        {
-                            Id = Guid.NewGuid(),
-                            TimeSeriesId = timeSeries_Id,
-                            RowIndex = i,
-                            Receiption = receiption,
-                            RecivedValue = recivedValue,
-                            DataMemberId = item.Id,
-                            Approved = "1"
-                        });
 
+                        for (int k = 0; k < historicalValues.Count; k++)
+                        {
+                            if (Equals(historicalValues[k].TimeSeriesId, Guid.Empty))
+                            {
+                                historicalValues[k].TimeSeriesId = timeSeries_Id;
+                            }
+                        }
                     }
                 }
             }
@@ -361,13 +388,36 @@ namespace tavanir2.Controllers
                 queryBuilder_TimeSeries.Append(token.ToString());
                 queryBuilder_TimeSeries.Append("','");
                 queryBuilder_TimeSeries.Append(timeSeries[j].Year);
-                queryBuilder_TimeSeries.Append("','");
-                queryBuilder_TimeSeries.Append(timeSeries[j].Month.HasValue ? timeSeries[j].Month.Value.ToString() : "");
-                queryBuilder_TimeSeries.Append("','");
-                queryBuilder_TimeSeries.Append(timeSeries[j].DayOfMonth.HasValue ? timeSeries[j].DayOfMonth.Value.ToString() : "");
-                queryBuilder_TimeSeries.Append("','");
-                queryBuilder_TimeSeries.Append(timeSeries[j].TimeOfDay);
-                queryBuilder_TimeSeries.Append("','");
+                queryBuilder_TimeSeries.Append("',");
+                if (timeSeries[j].Month.HasValue)
+                {
+                    queryBuilder_TimeSeries.Append(timeSeries[j].Month.Value);
+                }
+                else
+                {
+                    queryBuilder_TimeSeries.Append("NULL");
+                }
+                queryBuilder_TimeSeries.Append(",");
+                if (timeSeries[j].DayOfMonth.HasValue)
+                {
+                    queryBuilder_TimeSeries.Append(timeSeries[j].Month.Value);
+                }
+                else
+                {
+                    queryBuilder_TimeSeries.Append("NULL");
+                }
+                queryBuilder_TimeSeries.Append(",");
+                if (!string.IsNullOrEmpty(timeSeries[j].TimeOfDay))
+                {
+                    queryBuilder_TimeSeries.Append("'");
+                    queryBuilder_TimeSeries.Append(timeSeries[j].TimeOfDay);
+                    queryBuilder_TimeSeries.Append("'");
+                }
+                else
+                {
+                    queryBuilder_TimeSeries.Append("NULL");
+                }
+                queryBuilder_TimeSeries.Append(",'");
                 queryBuilder_TimeSeries.Append(timeSeries[j].Enabled);
                 queryBuilder_TimeSeries.Append("')");
             }
@@ -386,9 +436,18 @@ namespace tavanir2.Controllers
                 queryBuilder_HistoricalValues.Append(historicalValues[j].TimeSeriesId.ToString());
                 queryBuilder_HistoricalValues.Append("','");
                 queryBuilder_HistoricalValues.Append(historicalValues[j].RowIndex);
-                queryBuilder_HistoricalValues.Append("','");
-                queryBuilder_HistoricalValues.Append(historicalValues[j].RecivedValue);
-                queryBuilder_HistoricalValues.Append("','");
+                queryBuilder_HistoricalValues.Append("',");
+                if (!string.IsNullOrEmpty(historicalValues[j].RecivedValue))
+                {
+                    queryBuilder_HistoricalValues.Append("N'");
+                    queryBuilder_HistoricalValues.Append(historicalValues[j].RecivedValue);
+                    queryBuilder_HistoricalValues.Append("'");
+                }
+                else
+                {
+                    queryBuilder_HistoricalValues.Append("NULL");
+                }
+                queryBuilder_HistoricalValues.Append(",'");
                 queryBuilder_HistoricalValues.Append(historicalValues[j].Approved);
                 queryBuilder_HistoricalValues.Append("','");
                 queryBuilder_HistoricalValues.Append(historicalValues[j].Receiption);
@@ -416,7 +475,7 @@ namespace tavanir2.Controllers
             baseRepository.ExecuteCommand(conn =>
             {
                 var query = conn.Query("INSERT INTO [TavanirStage].[Stage].[AuthorizationTokens] ([Token], [CreatedDate], [CompanyId], [Code]) VALUES (@Token, @CreatedDate, @CompanyId, @Code)",
-                    new { @Token = token, @CompanyId = companyId, @CreatedDate = receiption, @Code = authorizationTokens_Code });
+                    new { @Token = token, @CompanyId = Guid.Parse(companyId), @CreatedDate = receiption, @Code = authorizationTokens_Code });
             });
 
             baseRepository.ExecuteCommand(conn =>
@@ -468,6 +527,58 @@ namespace tavanir2.Controllers
             SetViewBag();
 
             return View();
+        }
+
+        [HttpPost]
+        public IActionResult Report(Report model)
+        {
+            if (!baseRepository.ValidationToken())
+            {
+                return Redirect("/Login/Index");
+            }
+
+            SetViewBag();
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            model.Result = new ReportResult();
+
+            model.Result = baseRepository.ExecuteCommand(conn =>
+                conn.Query<ReportResult>("SELECT" +
+                " (SELECT COUNT([HV].Approved) FROM [TavanirStage].[Basic].[TimeSeries] AS [TS]" +
+                " INNER JOIN [TavanirStage].[Stage].[HistoricalValues] AS [HV] ON [TS].[Id] = [HV].[TimeSeriesId] AND [HV].[Approved] = '1'" +
+                " WHERE [TS].[Token] = [AT].[Token]) AS [ApprovedCounts]," +
+                " (SELECT COUNT([HV].Approved) FROM [TavanirStage].[Basic].[TimeSeries] AS [TS]" +
+                " INNER JOIN [TavanirStage].[Stage].[HistoricalValues] AS [HV] ON [TS].[Id] = [HV].[TimeSeriesId] AND [HV].[Approved] = '0'" +
+                " WHERE [TS].[Token] = [AT].[Token]) AS [NotApproveCounts]" +
+                " FROM [TavanirStage].[Stage].[AuthorizationTokens] AS [AT]" +
+                " WHERE [AT].[Code] = @Code",
+                new { @Code = model.Code }).FirstOrDefault());
+
+            if (model.Result.ApprovedCounts > 0 || model.Result.NotApproveCounts > 0)
+            {
+                model.Result.CodeFounded = true;
+
+                model.Result.ListNotAproved = baseRepository.ExecuteCommand(conn =>
+                    conn.Query<ReportNotAproved>("SELECT [HV].[RowIndex], [HV].[RecivedValue], [HV].[Mesaage]" +
+                    " FROM [TavanirStage].[Stage].[AuthorizationTokens] AS [AT] " +
+                    " INNER JOIN [TavanirStage].[Basic].[TimeSeries] AS [TS] ON [AT].[Token] = [TS].[Token]" +
+                    " INNER JOIN [TavanirStage].[Stage].[HistoricalValues] AS [HV] ON [TS].[Id] = [HV].[TimeSeriesId] AND [HV].[Approved] = '0'" +
+                    " INNER JOIN [TavanirStage].[Stage].[DataMembers] AS [DM] ON [HV].[DataMemberId] = [DM].[Id]" +
+                    " INNER JOIN [TavanirStage].[Basic].[DataItems] AS [DI] ON [DM].[DataItemId] = [DI].[Id]" +
+                    " WHERE [AT].[Code] = @Code",
+                    new { @Code = model.Code }).ToList());
+            }
+            else
+            {
+                model.Result.CodeFounded = false;
+                ModelState.AddModelError(nameof(model.Code), "کد پیگیری وارد شده معتبر نمی‌باشد.");
+            }
+
+            return View(model);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

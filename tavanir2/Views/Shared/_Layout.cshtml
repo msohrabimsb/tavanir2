@@ -36,7 +36,7 @@
     <link rel="icon" href="~/img/favicon/arianicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
-<body class="smart-rtl fixed-navigation dx-viewport hidden-menu" style="font-family:Tahoma;font-size:14px;">
+<body class="smart-rtl fixed-navigation dx-viewport hidden-menu" style="font-size:14px;">
     <div id="loadingProcess" style="display:none;">
         <div>
             <img alt="لطفاً منتظر بمانید ..." src="~/images/loading.gif" />
@@ -45,43 +45,36 @@
 
     @if (!string.IsNullOrEmpty((string)ViewBag.CompanyName))
     {
-        <header>
-            <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-                <div class="container">
-                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                            aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                        شرکت: @ViewBag.CompanyName
-                    </button>
-                    <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
-                        <ul class="navbar-nav flex-grow-1">
-                            @if (string.IsNullOrEmpty((string)ViewBag.Code))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">ایمپورت فایل اکسل</a>
-                                </li>
-                            }
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="@ViewBag.DashUrl">داشبورد</a>
-                            </li>
-                        </ul>
+        <section id="widget-grid">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="row pull-left" dir="rtl">
+                        <a asp-controller="Home" asp-action="Report" class="jarvismetro-tile big-cubes bg-color-greenDark"> <span class="iconbox"> <i class="fa fa-bar-chart fa-4x"></i> <span>گزارش</span> </span> </a>
+                        @if (string.IsNullOrEmpty((string)ViewBag.Code))
+                        {
+                            <a asp-controller="Home" asp-action="Index" class="jarvismetro-tile big-cubes bg-color-blue"> <span class="iconbox"> <i class="fa fa-file-excel-o fa-4x"></i> <span>ایمپورت فایل اکسل</span> </span> </a>
+                        }
+                        <a target="_blank" href="@ViewBag.DashUrl" class="jarvismetro-tile big-cubes bg-color-orangeDark"> <span class="iconbox"> <i class="fa fa-dashboard fa-4x"></i> <span>داشبوردها</span> </span> </a>
+                        <span class="jarvismetro-tile big-cubes bg-color-darken"><span class="iconbox"><span style="font-size:13px;text-align:right;direction:rtl;">نام شرکت: @ViewBag.CompanyName</span></span></span>
                     </div>
                 </div>
-            </nav>
-        </header>
+            </div>
+        </section>
     }
 
     <div id="main" role="main">
-        <div id="content" style="height:100vh;">
+        <div id="content">
             @RenderBody()
         </div>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2020 - آرین نوین رایانه
+    <div class="page-footer">
+        <div class="row" dir="ltr">
+            <div class="col-12" style="color:white;">
+                <img alt="." src="~/images/arian.png" style="width:25px;border-radius:3px;" /> &copy; @DateTime.Now.Year - آرین نوین رایانه
+            </div>
         </div>
-    </footer>
+    </div>
     <!--================================================== -->
     <!-- PACE LOADER - turn this on if you want ajax loading to show (caution: uses lots of memory on iDevices)-->
     <script data-pace-options='{ "restartOnRequestAfter": true }' src="~/js/plugin/pace/pace.min.js"></script>
