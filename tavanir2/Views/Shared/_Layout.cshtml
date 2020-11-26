@@ -19,6 +19,8 @@
     <!-- SmartAdmin RTL Support -->
     <link rel="stylesheet" type="text/css" media="screen" href="~/css/smartadmin-rtl.min.css" />
 
+    <link rel="stylesheet" type="text/css" media="screen" href="~/lib/select2/css/select2.min.css" />
+
     <!-- We recommend you use "your_style.css" to override SmartAdmin
          specific styles this will also ensure you retrain your customization with each SmartAdmin update.
     <link rel="stylesheet" type="text/css" media="screen" href="~/css/your_style.css"> -->
@@ -41,7 +43,7 @@
         </div>
     </div>
 
-    @if (Context.Session.HasKey("LoginToken") && !string.IsNullOrEmpty((string)ViewBag.CompanyName))
+    @if (!string.IsNullOrEmpty((string)ViewBag.CompanyName))
     {
         <header>
             <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
@@ -53,14 +55,14 @@
                     </button>
                     <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
                         <ul class="navbar-nav flex-grow-1">
+                            @if (string.IsNullOrEmpty((string)ViewBag.Code))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">ایمپورت فایل اکسل</a>
+                                </li>
+                            }
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">ایمپورت فایل اکسل</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Home" asp-action="Report">پیگیری ایمپورت داده ها</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="@ViewBag.LoginToken">داشبورد</a>
+                                <a class="nav-link text-dark" href="@ViewBag.DashUrl">داشبورد</a>
                             </li>
                         </ul>
                     </div>
@@ -144,6 +146,13 @@
     <script src="..."></script>-->
 
     <script src="~/lib/jBox/jBox.all.min.js"></script>
+
+
+    <script>
+        $(function () {
+            pageSetUp();
+        });
+    </script>
 
     <script src="~/js/arian/site_base.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

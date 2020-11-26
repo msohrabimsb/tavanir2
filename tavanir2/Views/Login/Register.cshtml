@@ -43,35 +43,33 @@
             <div class="row">
                 <section class="col col-6">
                     <label class="label">موقعیت مکانی</label>
-                    <select id="LocationId" name="LocationId" class="select2 form-control" style="width:100%;">
-                        @if (Model.Locations?.Any() ?? false)
-                        {
-                            foreach (var item in Model.Locations)
+                    <label class="input">
+                        <select id="LocationId" name="LocationId" class="select2" style="width:100%;">
+                            @if (Model.Locations?.Any() ?? false)
                             {
-                                <option value="@item.LocationId">@item.Name</option>
+                                foreach (var item in Model.Locations)
+                                {
+                                    <option value="@item.LocationId">@item.Name</option>
+                                }
                             }
-                        }
-                    </select>
+                        </select>
+                    </label>
                     <span asp-validation-for="LocationId" class="text-danger"></span>
                 </section>
                 <section class="col col-6">
                     <label class="label" asp-for="Description"></label>
                     <label class="input">
-                        <textarea asp-for="Description"></textarea>
+                        <textarea asp-for="Description" class="form-control" style="width:100%;"></textarea>
                     </label>
                     <span asp-validation-for="Description" class="text-danger" style="width:100%;"></span>
                 </section>
             </div>
+            <section>
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            </section>
         </fieldset>
         <footer>
-            <button type="submit" class="btn btn-primary">ورود</button>
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <button type="submit" class="btn btn-primary">ثبت نام</button>
         </footer>
     </form>
 </div>
-
-<script>
-    $(function () {
-        $('.select2').select2();
-    });
-</script>

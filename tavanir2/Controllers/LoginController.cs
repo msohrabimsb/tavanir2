@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,11 +11,13 @@ namespace tavanir2.Controllers
 {
     public class LoginController : Controller
     {
+        private readonly IConfiguration configuration;
         private readonly IBaseRepository baseRepository;
         private readonly HashingPassword hashingPassword;
 
-        public LoginController(IBaseRepository baseRepository, HashingPassword hashingPassword)
+        public LoginController(IConfiguration configuration, IBaseRepository baseRepository, HashingPassword hashingPassword)
         {
+            this.configuration = configuration;
             this.baseRepository = baseRepository;
             this.hashingPassword = hashingPassword;
         }
@@ -56,17 +59,14 @@ namespace tavanir2.Controllers
                 return View(model);
             }
 
-            string loginToken = Guid.NewGuid().ToString();
 
-            baseRepository.ExecuteCommand(conn =>
-            {
-                var query = conn.Query("INSERT INTO  [TavanirStage].[Stage].[AuthorizationTokens] ([Token], [CreatedDate], [CompanyId], [Code]) VALUES (@Token, GETDATE(), @CompanyId, @Code)",
-                    new { @Token = loginToken, @CompanyId = res.Id, @Code = res.Code });
-            });
-
-            HttpContext.Session.SetString("CompanyId", res.Id.ToString());
+            string companyId = res.Id.ToString();
+            HttpContext.Session.SetString("CompanyId", companyId);
             HttpContext.Session.SetString("CompanyName", res.Name);
-            HttpContext.Session.SetString("LoginToken", loginToken);
+            HttpContext.Session.SetString("DashUrl", string.Concat(configuration.GetSection("DashboardAddress").Value, companyId));
+
+            if (HttpContext.Session.HasKey("Code"))
+                HttpContext.Session.Remove("Code");
 
             return Redirect("/Home/Index");
         }

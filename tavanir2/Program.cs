@@ -1,11 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace tavanir2
 {
@@ -20,7 +14,12 @@ namespace tavanir2
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    webBuilder.ConfigureKestrel(serverOptions =>
+                    {
+                        // Set properties and call methods on options
+                        serverOptions.Limits.MaxRequestBodySize = 1073741824; // 1 GB
+                    })
+                    .UseStartup<Startup>();
                 });
     }
 }

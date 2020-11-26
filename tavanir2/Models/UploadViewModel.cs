@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace tavanir2.Models
@@ -15,8 +17,19 @@ namespace tavanir2.Models
         [Display(Name = "نام Sheet")]
         public string SheetName { get; set; }
 
-        [Required]
         [Display(Name = "عنوان ستون‌ها")]
         public string ColumnsType { get; set; }
+
+        [Required]
+        [Display(Name = "گروه داده‌ای")]
+        public Guid DataCategoryID { get; set; }
+
+        public List<DataCategories> ListDataCategories { get; set; }
+    }
+
+    public class DataCategories
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿@model UploadViewModel 
+﻿@model UploadViewModel
 @{
     ViewData["Title"] = "ایمپورت فایل اکسل";
 }
@@ -6,6 +6,21 @@
 <div class="col col-7">
     <form class="smart-form" method="post" enctype="multipart/form-data" asp-action="Index">
         <fieldset>
+            <section class="col col-6">
+                <label class="label">گروه داده ای</label>
+                <label class="input">
+                    <select id="DataCategoryID" name="DataCategoryID" class="select2" style="width:100%;">
+                        @if (Model.ListDataCategories?.Any() ?? false)
+                        {
+                            foreach (var item in Model.ListDataCategories)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        }
+                    </select>
+                </label>
+                <span asp-validation-for="DataCategoryID" class="text-danger"></span>
+            </section>
             <section class="col col-6">
                 <label class="label">
                     <label asp-for="File"></label>
@@ -21,7 +36,7 @@
                     <label asp-for="SheetName"></label>
                 </label>
                 <label class="input">
-                    <input asp-for="SheetName" class="text-center" />
+                    <input asp-for="SheetName" class="ltr text-center" />
                 </label>
                 <span asp-validation-for="SheetName" class="text-danger"></span>
             </section>
@@ -30,7 +45,7 @@
                     <label asp-for="ColumnsType"></label>
                 </label>
                 <label class="input">
-                    <select asp-for="ColumnsType" class="select2 form-control" style="width:100%;">
+                    <select asp-for="ColumnsType" class="select2" style="width:100%;" disabled>
                         <option value="Code">کد</option>
                         <option value="Name" selected="selected">نام</option>
                         <option value="Title">عنوان</option>
@@ -38,16 +53,12 @@
                 </label>
                 <span asp-validation-for="ColumnsType" class="text-danger"></span>
             </section>
+            <section>
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            </section>
         </fieldset>
         <footer>
             <button type="submit" class="btn btn-primary">بارگذاری</button>
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         </footer>
     </form>
 </div>
-
-<script>
-    $(function () {
-        $('.select2').select2();
-    });
-</script>

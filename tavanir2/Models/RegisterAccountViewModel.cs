@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace tavanir2.Models
@@ -38,21 +37,5 @@ namespace tavanir2.Models
         public string Description { get; set; }
 
         public List<Locations> Locations { get; set; }
-    }
-
-    public class Locations
-    {
-        public string LocationId { get; set; }
-        public string Name { get; set; }
-    }
-
-    public class DataItemsInSets
-    {
-        public string ColumnValue { get; set; }
-        public Guid DataSetId { get; set; }
-        public Guid DataItemId { get; set; }
-        public string RegularExperssion { get; set; }
-        public string ValidationRule { get; set; }
-        public string ValidationMessage { get; set; }
     }
 }

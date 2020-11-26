@@ -42,25 +42,19 @@ namespace tavanir2.Models
 
         public bool ValidationToken()
         {
-            if (!Guid.TryParse(contextAccessor.HttpContext.Session.GetString("LoginToken"), out Guid token) || token == null)
+            if (!contextAccessor.HttpContext.Session.HasKey("CompanyId") || !Guid.TryParse(contextAccessor.HttpContext.Session.GetString("CompanyId"), out Guid companyId) || companyId == null)
             {
-                contextAccessor.HttpContext.Session.SetString("LoginToken", string.Empty);
-                return false;
-            }
-            if (!Guid.TryParse(contextAccessor.HttpContext.Session.GetString("CompanyId"), out Guid companyId) || companyId == null)
-            {
-                contextAccessor.HttpContext.Session.SetString("LoginToken", string.Empty);
                 return false;
             }
 
-            var res = ExecuteCommand(conn =>
-                conn.Query<Guid>("SELECT [Token] FROM [TavanirStage].[Stage].[AuthorizationTokens] WHERE [Token] = @Token AND [CompanyId] = @CompanyId",
-                    new { @Token = token, @CompanyId = companyId }).FirstOrDefault());
+            Guid? res = ExecuteCommand(conn =>
+                conn.Query<Guid>("SELECT [Id] FROM [TavanirStage].[Basic].[Companies] WHERE [Id] = @Id",
+                    new { @Id = companyId })?.FirstOrDefault());
 
-            if (res != null && res == token)
+            if (res.HasValue && res.Value == companyId)
                 return true;
 
-            contextAccessor.HttpContext.Session.SetString("LoginToken", string.Empty);
+            contextAccessor.HttpContext.Session.Remove("CompanyId");
             return false;
         }
     }
