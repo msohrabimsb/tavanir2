@@ -60,7 +60,16 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         </footer>
         <footer>
-            <button type="submit" class="btn btn-success">بارگذاری</button>
+            <button type="submit" class="btn btn-success">بارگذاری و ثبت داده‌ها</button>
+            &nbsp;&nbsp;&nbsp;<button type="reset" class="btn btn-default" onclick="resetDrps();">فرم خام</button>
         </footer>
     </form>
 </div>
+
+<script>
+    function resetDrps() {
+        setTimeout(function () {
+            $('.select2').trigger('change');
+        }, 500);
+    }
+</script>

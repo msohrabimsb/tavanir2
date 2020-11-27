@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -7,6 +8,7 @@ using tavanir2.Models;
 
 namespace tavanir2.Controllers
 {
+    [EnableCors("ValidationPolicy")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]

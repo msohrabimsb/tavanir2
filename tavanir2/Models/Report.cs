@@ -3,11 +3,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace tavanir2.Models
 {
-    public class Report
+    public class ReportViewModel
     {
-        [Required]
+        [Required(ErrorMessage = "تکمیل فیلد {0} ضروری است.")]
         [DataType(DataType.Text)]
-        [StringLength(10, MinimumLength = 10)]
+        [StringLength(10, MinimumLength = 10, ErrorMessage = "فیلد {0} بایستی از نوع یک رشته با حداقل طول {2} و حداکثر طول {1} باشد.")]
         [Display(Name = "کد پیگیری")]
         public string Code { get; set; }
 

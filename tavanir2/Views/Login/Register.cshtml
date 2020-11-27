@@ -70,6 +70,15 @@
         </footer>
         <footer>
             <button type="submit" class="btn btn-primary">ثبت نام</button>
+            &nbsp;&nbsp;&nbsp;<button type="reset" class="btn btn-default" onclick="resetDrps();">فرم خام</button>
         </footer>
     </form>
 </div>
+
+<script>
+    function resetDrps() {
+        setTimeout(function () {
+            $('.select2').trigger('change');
+        }, 500);
+    }
+</script>

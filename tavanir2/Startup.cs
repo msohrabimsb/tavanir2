@@ -23,7 +23,21 @@ namespace tavanir2
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //services.AddCors(options =>
+            //{
+            //    options.AddPolicy("ValidationPolicy",
+            //        builder =>
+            //        {
+            //            builder.WithOrigins(Configuration.GetSection("Kestrel").GetSection("EndPoints")
+            //                .GetSection("Http").GetSection("Url").Value)
+            //            .WithMethods("GET")
+            //            .AllowAnyHeader();
+            //        });
+            //});
+
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+            services.AddDistributedMemoryCache();
 
             services.Configure<CookiePolicyOptions>(options =>
             {
@@ -47,7 +61,8 @@ namespace tavanir2
 
             services.AddHttpContextAccessor();
 
-            services.AddMvc();
+            services.AddMvc()
+                .AddXmlSerializerFormatters();
 
             services.AddTransient<IBaseRepository, BaseRepository>();
             services.AddTransient<HashingPassword>();
@@ -56,6 +71,8 @@ namespace tavanir2
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            //app.UseCors("ValidationPolicy");
+
             app.UseCookiePolicy();
             app.UseAuthentication();
             app.UseSession();

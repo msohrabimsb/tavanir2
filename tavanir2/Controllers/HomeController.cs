@@ -143,9 +143,10 @@ namespace tavanir2.Controllers
         private string UsingOleDb(string inFilePath, UploadViewModel model)
         {
             string companyId = HttpContext.Session.GetString("CompanyId");
+            string companyCode = HttpContext.Session.GetString("CompanyCode");
 
             List<DataMembers> dataMembers = baseRepository.ExecuteCommand(conn =>
-                 conn.Query<DataMembers>(@"SELECT [DI].[" + model.ColumnsType + @"] AS [ColumnValue]" +
+                 conn.Query<DataMembers>(@"SELECT [DI].[" + model.ColumnsType + @"] AS [ColumnValue], [DI].[Title]" +
                  @", [DM].[Id], [DM].[DataSetId], [DM].[DataItemId], [DM].[RegularExperssion], [DM].[Description]" +
                  @" FROM [TavanirStage].[Stage].[DataMembers] AS [DM]" +
                  @" INNER JOIN [TavanirStage].[Basic].[DataItems] AS [DI] ON [DM].[DataItemId] = [DI].[Id]" +
@@ -167,6 +168,7 @@ namespace tavanir2.Controllers
             int year; byte? month; byte? dayOfMonth; string timeOfDay = string.Empty;
 
             int i = 0;
+            int i_save = 0;
             DataMembers item = null;
 
             DateTime receiption = DateTime.Now;
@@ -185,34 +187,19 @@ namespace tavanir2.Controllers
                 {
                     if (dr.FieldCount == 0)
                     {
-                        return string.Format("مقدار ای در فایل اکسل یافت نشد.");
-                    }
-
-                    for (int j = 0; j < dr.FieldCount; j++)
-                    {
-                        switch (dr.GetName(j))
-                        {
-                            case "Year": break;
-                            case "Month": break;
-                            case "DayOfMonth": break;
-                            case "TimeOfDay": break;
-                            default:
-                                item = dataMembers.Where(c => c.ColumnValue == dr.GetName(j))?.FirstOrDefault();
-
-                                if (item == null || item.DataSetId == null)
-                                {
-                                    return $"ستون «{dr.GetName(j)}» تعریف نشده و یا فعال نمی‌باشد.";
-                                }
-                                break;
-                        }
+                        return "داده‌ای در فایل اکسل یافت نشد.";
                     }
 
 
                     timeSeries = new List<TimeSeries>();
                     historicalValues = new List<HistoricalValues>(dr.FieldCount);
+                    bool has_data_in_row;
                     while (dr.Read())
                     {
                         i++;
+                        i_save++;
+
+                        has_data_in_row = false;
 
                         year = default_year;
                         month = null;
@@ -220,15 +207,21 @@ namespace tavanir2.Controllers
                         timeOfDay = null;
                         for (int j = 0; j < dr.FieldCount; j++)
                         {
-                            string recivedValue = null;
-
                             string val = dr.GetValue(j).ToString();
                             switch (dr.GetName(j))
                             {
+                                case "Token": case "RowIndex": break;
                                 case "Year":
-                                    if (!int.TryParse(val, out year))
+                                    if (!string.IsNullOrEmpty(val))
                                     {
-                                        year = default_year;
+                                        if (!int.TryParse(val, out year))
+                                        {
+                                            if (!byte.TryParse(val, out byte month2))
+                                            {
+                                                return string.Concat("مقدار سال وارد شده (", val, ") در سطر ", i, " معتبر نمی‌باشد.");
+                                            }
+                                            //year = default_year;
+                                        }
                                     }
                                     break;
                                 case "Month":
@@ -236,7 +229,7 @@ namespace tavanir2.Controllers
                                     {
                                         if (!byte.TryParse(val, out byte month2))
                                         {
-                                            return $"مقدار ماه وارد شده ({val}) در سطر {i} معتبر نمی‌باشد.";
+                                            return string.Concat("مقدار ماه وارد شده (", val, ") در سطر ", i, " معتبر نمی‌باشد.");
                                         }
                                         if (!(month2 >= 1 && month2 <= 12))
                                         {
@@ -245,123 +238,176 @@ namespace tavanir2.Controllers
                                         month = month2;
                                     }
                                     break;
-                                case "DayOfMonth":
-
+                                case "Day":
                                     if (!string.IsNullOrEmpty(val))
                                     {
                                         if (!byte.TryParse(val, out byte dayOfMonth2))
                                         {
-                                            return $"مقدار روز ({val}) از ماه وارد شده در سطر {i} معتبر نمی‌باشد.";
+                                            return string.Concat("مقدار روز (", val, ") از ماه وارد شده در سطر ", i, " معتبر نمی‌باشد.");
                                         }
                                         dayOfMonth = dayOfMonth2;
                                     }
                                     break;
-                                case "TimeOfDay":
+                                case "Hour":
                                     if (!string.IsNullOrEmpty(val))
                                     {
                                         if (val.IndexOf(":") == -1 || !DateTime.TryParse(val, out DateTime timeOfDay2))
                                         {
-                                            return $"مقدار زمان ({val}) وارد شده در سطر {i} معتبر نمی‌باشد.";
+                                            return string.Concat("مقدار زمان (", val, ") وارد شده در سطر ", i, " معتبر نمی‌باشد. فرمت صحیح HH:mm:ss");
                                         }
                                         timeOfDay = timeOfDay2.ToString("HH:mm:ss");
                                     }
                                     break;
                                 default:
-                                    recivedValue = val;
-                                    item = dataMembers.Where(c => c.ColumnValue == dr.GetName(j)).First();
+                                    item = dataMembers.Where(c => c.ColumnValue == dr.GetName(j))?.FirstOrDefault();
 
-                                    if (!string.IsNullOrEmpty(item.RegularExperssion))
+                                    if (item != null && item.DataSetId != null && !Equals(item.DataSetId, Guid.Empty))
                                     {
-                                        Regex rgx = new Regex(item.RegularExperssion);
-                                        if (!rgx.IsMatch(recivedValue))
+                                        if (item.ColumnValue == "COMP" && string.IsNullOrEmpty(val) && !string.IsNullOrEmpty(companyCode))
                                         {
-                                            return string.Concat("مقدار «", recivedValue,
-                                                " برای ستون «", item.ColumnValue,
-                                                "» (به شماره ستون ", j + 1,
-                                                ") در سطر ", i,
-                                                " معتبر نمی‌باشد. : ", item.Description);
+                                            val = companyCode;
+                                        }
+
+                                        if (!string.IsNullOrEmpty(item.RegularExperssion))
+                                        {
+                                            Regex rgx = new Regex(item.RegularExperssion);
+                                            if (!rgx.IsMatch(val))
+                                            {
+                                                return string.Concat("مقدار «", val,
+                                                    "»، برای «", item.ColumnValue,
+                                                    " ::: ", item.Title, "» در سطر ", i,
+                                                    " معتبر نمی‌باشد. : ", item.Description);
+                                            }
+                                        }
+
+                                        historicalValues.Add(new HistoricalValues()
+                                        {
+                                            Id = Guid.NewGuid(),
+                                            TimeSeriesId = Guid.Empty,
+                                            RowIndex = i_save,
+                                            Receiption = receiption,
+                                            RecivedValue = val,
+                                            DataMemberId = item.Id,
+                                            Approved = "1"
+                                        });
+
+                                        has_data_in_row = true;
+                                    }
+                                    else
+                                    {
+                                        if (!string.IsNullOrEmpty(val))
+                                        {
+                                            return $"ستون «{dr.GetName(j)}» تعریف نشده و یا فعال نمی‌باشد.";
                                         }
                                     }
                                     break;
                             }
-
-                            historicalValues.Add(new HistoricalValues()
-                            {
-                                Id = Guid.NewGuid(),
-                                TimeSeriesId = Guid.Empty,
-                                RowIndex = i,
-                                Receiption = receiption,
-                                RecivedValue = recivedValue,
-                                DataMemberId = item.Id,
-                                Approved = "1"
-                            });
                         }
 
-                        if (!(year >= 1300 && year <= 9999))
+                        if (has_data_in_row == true)
                         {
-                            return $"سال وارد شده ({year}) در سطر {i} در بازه مجاز نمی‌باشد.";
-                        }
-                        if (dayOfMonth.HasValue)
-                        {
-                            if (!month.HasValue)
+                            // بررسی مقادیر سال، ماه و روز:
+                            if (!(year >= 1300 && year <= 9999))
                             {
-                                return $"برای سطر {i} مقدار روز ({dayOfMonth.Value}) وارد شده درصورتی که مقدار ماه ای تعریف نشده است.";
+                                return $"سال وارد شده ({year}) در سطر {i} در بازه مجاز نمی‌باشد.";
                             }
-                            if (!((month.Value < 7 && (dayOfMonth.Value >= 1 && dayOfMonth.Value <= 31)) || (month.Value > 6 && (dayOfMonth.Value >= 1 && dayOfMonth.Value <= 30))))
-                            {
-                                return $"مقدار روز وارد شده ({dayOfMonth.Value}) برای ماه ({month.Value}) در سطر {i} در بازه مجاز نمی‌باشد.";
-                            }
-                        }
-
-
-                        Guid timeSeries_Id = Guid.Empty;
-
-                        if (month.HasValue)
-                        {
                             if (dayOfMonth.HasValue)
                             {
-                                timeSeries_Id = timeSeries.Where(c => c.Year == year && c.Month.HasValue && c.Month.Value == month.Value && c.DayOfMonth.HasValue && c.DayOfMonth.Value == dayOfMonth.Value && Equals(c.TimeOfDay, timeOfDay))
-                                    .Select(c => c.Id).FirstOrDefault();
+                                if (!month.HasValue)
+                                {
+                                    return $"برای سطر {i}: مقدار روز ({dayOfMonth.Value}) وارد شده، درصورتی که مقدار ماه ای وارد نشده است.";
+                                }
+                                if (!((month.Value < 7 && (dayOfMonth.Value >= 1 && dayOfMonth.Value <= 31)) || (month.Value > 6 && (dayOfMonth.Value >= 1 && dayOfMonth.Value <= 30))))
+                                {
+                                    return $"مقدار روز وارد شده ({dayOfMonth.Value}) برای ماه ({month.Value}) در سطر {i} معتبر نمی‌باشد.";
+                                }
+                            }
+
+                            // بررسی مقادیر ضروری که ستون‌هایشان در فایل اکسل آپلودی موجود نیستند:
+                            for (int k = 0; k < dataMembers.Count; k++)
+                            {
+                                if (!string.IsNullOrEmpty(item.RegularExperssion))
+                                {
+                                    Regex rgx = new Regex(item.RegularExperssion);
+                                    HistoricalValues item_ck = historicalValues.Where(c => c.DataMemberId == dataMembers[k].Id).FirstOrDefault();
+                                    if (item_ck == null || item_ck.Id == null || Equals(item_ck.Id, Guid.Empty))
+                                    {
+                                        if (item.ColumnValue == "COMP" && !string.IsNullOrEmpty(companyCode))
+                                        {
+                                            historicalValues.Add(new HistoricalValues()
+                                            {
+                                                Id = Guid.NewGuid(),
+                                                TimeSeriesId = Guid.Empty,
+                                                RowIndex = i_save,
+                                                Receiption = receiption,
+                                                RecivedValue = companyCode,
+                                                DataMemberId = item.Id,
+                                                Approved = "1"
+                                            });
+                                        }
+                                        else if (!rgx.IsMatch(string.Empty))
+                                        {
+                                            return string.Concat("مقدار ای برای «", item.ColumnValue,
+                                                " ::: ", item.Title, "» تعیین نشده است. : ", item.Description);
+                                        }
+                                    }
+                                }
+                            }
+
+
+                            Guid timeSeries_Id = Guid.Empty;
+
+                            if (month.HasValue)
+                            {
+                                if (dayOfMonth.HasValue)
+                                {
+                                    timeSeries_Id = timeSeries.Where(c => c.Year == year && c.Month.HasValue && c.Month.Value == month.Value && c.DayOfMonth.HasValue && c.DayOfMonth.Value == dayOfMonth.Value && Equals(c.TimeOfDay, timeOfDay))
+                                        .Select(c => c.Id).FirstOrDefault();
+                                }
+                                else
+                                {
+                                    timeSeries_Id = timeSeries.Where(c => c.Year == year && c.Month.HasValue && c.Month.Value == month.Value && !c.DayOfMonth.HasValue && Equals(c.TimeOfDay, timeOfDay))
+                                        .Select(c => c.Id).FirstOrDefault();
+                                }
                             }
                             else
                             {
-                                timeSeries_Id = timeSeries.Where(c => c.Year == year && c.Month.HasValue && c.Month.Value == month.Value && !c.DayOfMonth.HasValue && Equals(c.TimeOfDay, timeOfDay))
+                                timeSeries_Id = timeSeries.Where(c => c.Year == year && !c.Month.HasValue && !c.DayOfMonth.HasValue && Equals(c.TimeOfDay, timeOfDay))
                                     .Select(c => c.Id).FirstOrDefault();
+                            }
+
+                            if (Equals(timeSeries_Id, Guid.Empty))
+                            {
+                                timeSeries_Id = Guid.NewGuid();
+                                timeSeries.Add(new TimeSeries()
+                                {
+                                    Id = timeSeries_Id,
+                                    Year = year,
+                                    TimeOfDay = timeOfDay,
+                                    Enabled = "1"
+                                });
+                                if (month.HasValue)
+                                {
+                                    timeSeries[timeSeries.Count - 1].Month = month.Value;
+                                }
+                                if (dayOfMonth.HasValue)
+                                {
+                                    timeSeries[timeSeries.Count - 1].DayOfMonth = dayOfMonth.Value;
+                                }
+                            }
+
+
+                            for (int k = 0; k < historicalValues.Count; k++)
+                            {
+                                if (Equals(historicalValues[k].TimeSeriesId, Guid.Empty))
+                                {
+                                    historicalValues[k].TimeSeriesId = timeSeries_Id;
+                                }
                             }
                         }
                         else
                         {
-                            timeSeries_Id = timeSeries.Where(c => c.Year == year && !c.Month.HasValue && !c.DayOfMonth.HasValue && Equals(c.TimeOfDay, timeOfDay))
-                                .Select(c => c.Id).FirstOrDefault();
-                        }
-
-                        if (Equals(timeSeries_Id, Guid.Empty))
-                        {
-                            timeSeries_Id = Guid.NewGuid();
-                            timeSeries.Add(new TimeSeries()
-                            {
-                                Id = timeSeries_Id,
-                                Year = year,
-                                TimeOfDay = timeOfDay,
-                                Enabled = "1"
-                            });
-                            if (month.HasValue)
-                            {
-                                timeSeries[timeSeries.Count - 1].Month = month.Value;
-                            }
-                            if (dayOfMonth.HasValue)
-                            {
-                                timeSeries[timeSeries.Count - 1].DayOfMonth = dayOfMonth.Value;
-                            }
-                        }
-
-
-                        for (int k = 0; k < historicalValues.Count; k++)
-                        {
-                            if (Equals(historicalValues[k].TimeSeriesId, Guid.Empty))
-                            {
-                                historicalValues[k].TimeSeriesId = timeSeries_Id;
-                            }
+                            i_save--;
                         }
                     }
                 }
@@ -530,7 +576,7 @@ namespace tavanir2.Controllers
         }
 
         [HttpPost]
-        public IActionResult Report(Report model)
+        public IActionResult Report(ReportViewModel model)
         {
             if (!baseRepository.ValidationToken())
             {
