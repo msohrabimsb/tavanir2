@@ -25,12 +25,18 @@ namespace tavanir2.Controllers
         }
 
         // ذخیره فایل در سرور:
-        private async Task<string> UploadDbFileAndRetPath(UploadViewModel model)
+        private async Task<string> UploadDbFileAndRetPath(UploadViewModel model, string file_type)
         {
+            string companyCode = HttpContext.Session.GetString("CompanyCode");
             string dir_path = Path.Combine(Directory.GetCurrentDirectory(), "ExcelFiles");
+            PersianCalendar pc = new PersianCalendar();
             string path = Path.Combine(
                   dir_path,
-                  string.Concat(DateTime.Now.Ticks.ToString(), "_", model.File.FileName));
+                  string.Concat(
+                      companyCode,
+                      "_", pc.GetYear(DateTime.Now), "_", pc.GetMonth(DateTime.Now), "_", pc.GetDayOfMonth(DateTime.Now),
+                      "_", DateTime.Now.ToString("HH_mm_ss"),
+                      file_type));
 
             if (!Directory.Exists(dir_path))
             {
@@ -114,7 +120,7 @@ namespace tavanir2.Controllers
                     return View(model);
                 }
 
-                file_path = UploadDbFileAndRetPath(model).Result;
+                file_path = UploadDbFileAndRetPath(model, file_type).Result;
             }
             catch (Exception ex)
             {
