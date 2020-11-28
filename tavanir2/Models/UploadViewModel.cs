@@ -17,6 +17,7 @@ namespace tavanir2.Models
         [Display(Name = "نام Sheet")]
         public string SheetName { get; set; }
 
+        [Required(ErrorMessage = "تعیین {0} ضروری است.")]
         [Display(Name = "عنوان ستون‌ها")]
         public string ColumnsType { get; set; }
 
