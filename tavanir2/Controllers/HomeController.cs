@@ -101,7 +101,7 @@ namespace tavanir2.Controllers
 
             SetViewBag();
 
-            model.ColumnsType = "Name";
+            //model.ColumnsType = "Name";
 
             if (!ModelState.IsValid)
             {
@@ -152,7 +152,7 @@ namespace tavanir2.Controllers
             string companyCode = HttpContext.Session.GetString("CompanyCode");
 
             List<DataMembers> dataMembers = baseRepository.ExecuteCommand(conn =>
-                 conn.Query<DataMembers>(@"SELECT [DI].[" + model.ColumnsType + @"] AS [ColumnValue], [DI].[Title]" +
+                 conn.Query<DataMembers>(@"SELECT [DI].[" + model.ColumnsType + @"] AS [ColumnValue], [DI].[Name] AS [ColumnName], [DI].[Title]" +
                  @", [DM].[Id], [DM].[DataSetId], [DM].[DataItemId], [DM].[RegularExperssion], [DM].[Description]" +
                  @" FROM [TavanirStage].[Stage].[DataMembers] AS [DM]" +
                  @" INNER JOIN [TavanirStage].[Basic].[DataItems] AS [DI] ON [DM].[DataItemId] = [DI].[Id]" +
@@ -216,8 +216,9 @@ namespace tavanir2.Controllers
                             string val = dr.GetValue(j).ToString();
                             switch (dr.GetName(j))
                             {
-                                case "Token": case "RowIndex": break;
+                                case "Token": case "RowIndex": case "توکن": case "شماره سطر": break;
                                 case "Year":
+                                case "سال":
                                     if (!string.IsNullOrEmpty(val))
                                     {
                                         if (!int.TryParse(val, out year))
@@ -231,6 +232,7 @@ namespace tavanir2.Controllers
                                     }
                                     break;
                                 case "Month":
+                                case "ماه":
                                     if (!string.IsNullOrEmpty(val))
                                     {
                                         if (!byte.TryParse(val, out byte month2))
@@ -245,6 +247,7 @@ namespace tavanir2.Controllers
                                     }
                                     break;
                                 case "Day":
+                                case "روز":
                                     if (!string.IsNullOrEmpty(val))
                                     {
                                         if (!byte.TryParse(val, out byte dayOfMonth2))
@@ -255,6 +258,7 @@ namespace tavanir2.Controllers
                                     }
                                     break;
                                 case "Hour":
+                                case "ساعت":
                                     if (!string.IsNullOrEmpty(val))
                                     {
                                         if (val.IndexOf(":") == -1 || !DateTime.TryParse(val, out DateTime timeOfDay2))
@@ -269,7 +273,7 @@ namespace tavanir2.Controllers
 
                                     if (item != null && item.DataSetId != null && !Equals(item.DataSetId, Guid.Empty))
                                     {
-                                        if (item.ColumnValue == "COMP" && string.IsNullOrEmpty(val) && !string.IsNullOrEmpty(companyCode))
+                                        if (item.ColumnName == "COMP" && string.IsNullOrEmpty(val) && !string.IsNullOrEmpty(companyCode))
                                         {
                                             val = companyCode;
                                         }
@@ -280,7 +284,7 @@ namespace tavanir2.Controllers
                                             if (!rgx.IsMatch(val))
                                             {
                                                 return string.Concat("مقدار «", val,
-                                                    "»، برای «", item.ColumnValue,
+                                                    "»، برای «", item.ColumnName,
                                                     " ::: ", item.Title, "» در سطر ", i,
                                                     " معتبر نمی‌باشد. : ", item.Description);
                                             }
@@ -338,7 +342,7 @@ namespace tavanir2.Controllers
                                     HistoricalValues item_ck = historicalValues.Where(c => c.DataMemberId == dataMembers[k].Id).FirstOrDefault();
                                     if (item_ck == null || item_ck.Id == null || Equals(item_ck.Id, Guid.Empty))
                                     {
-                                        if (item.ColumnValue == "COMP" && !string.IsNullOrEmpty(companyCode))
+                                        if (item.ColumnName == "COMP" && !string.IsNullOrEmpty(companyCode))
                                         {
                                             historicalValues.Add(new HistoricalValues()
                                             {
@@ -353,7 +357,7 @@ namespace tavanir2.Controllers
                                         }
                                         else if (!rgx.IsMatch(string.Empty))
                                         {
-                                            return string.Concat("مقدار ای برای «", item.ColumnValue,
+                                            return string.Concat("مقدار ای برای «", item.ColumnName,
                                                 " ::: ", item.Title, "» تعیین نشده است. : ", item.Description);
                                         }
                                     }
