@@ -10,7 +10,7 @@ namespace tavanir2.Models
         {
             if (salt == null)
             {
-                // generate a 128-bit salt using a secure PRNG
+                // generate a 150-bit salt using a secure PRNG
                 salt = new byte[150];
                 using (var rng = RandomNumberGenerator.Create())
                 {

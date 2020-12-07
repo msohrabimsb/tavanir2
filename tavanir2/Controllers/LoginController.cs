@@ -52,17 +52,23 @@ namespace tavanir2.Controllers
                 return View(model);
             }
 
+            if (string.IsNullOrWhiteSpace(model.Password))
+            {
+                ModelState.AddModelError(nameof(model.Password), "رمز عبور را وارد نمایید.");
+                return View(model);
+            }
+
             var res = baseRepository.ExecuteCommand(conn =>
                 conn.Query<Company>("SELECT [Id], [Code], [Name], [Enabled], [Password], [PasswordHash], [PasswordSalt] FROM [TavanirStage].[Basic].[Companies] WHERE [Username] = @Username",
                     new { model.Username }).FirstOrDefault());
 
-            if (res == null || res.Id == null || string.IsNullOrEmpty(res.Id.ToString()))
+            if (res == null || res.Id == null || Equals(res.Id, Guid.Empty))
             {
                 ModelState.AddModelError(nameof(model.Username), "نام کاربری یافت نشد.");
                 return View(model);
             }
 
-            if (!Equals(res.Password, model.Password) || !hashingPassword.VerifyPassword(res.PasswordHash, res.PasswordSalt, model.Password))
+            if (!Equals(res.Password, model.Password) && !hashingPassword.VerifyPassword(res.PasswordHash, res.PasswordSalt, model.Password))
             {
                 ModelState.AddModelError(nameof(model.Password), "رمز عبور صحیح نیست.");
                 return View(model);

@@ -530,18 +530,17 @@ namespace tavanir2.Controllers
 
             baseRepository.ExecuteCommand(conn =>
             {
-                var query = conn.Query("INSERT INTO [TavanirStage].[Stage].[AuthorizationTokens] ([Token], [CreatedDate], [CompanyId], [Code]) VALUES (@Token, @CreatedDate, @CompanyId, @Code)",
-                    new { @Token = token, @CompanyId = Guid.Parse(companyId), @CreatedDate = receiption, @Code = authorizationTokens_Code });
-            });
+                using (var transaction = conn.BeginTransaction())
+                {
+                    conn.Execute("INSERT INTO [TavanirStage].[Stage].[AuthorizationTokens] ([Token], [CreatedDate], [CompanyId], [Code]) VALUES (@Token, @CreatedDate, @CompanyId, @Code)",
+                        new { @Token = token, @CompanyId = Guid.Parse(companyId), @CreatedDate = receiption, @Code = authorizationTokens_Code }, transaction);
 
-            baseRepository.ExecuteCommand(conn =>
-            {
-                var query = conn.Query(queryBuilder_TimeSeries.ToString());
-            });
+                    conn.Execute(queryBuilder_TimeSeries.ToString(), null, transaction);
 
-            baseRepository.ExecuteCommand(conn =>
-            {
-                var query = conn.Query(queryBuilder_HistoricalValues.ToString());
+                    conn.Execute(queryBuilder_HistoricalValues.ToString(), null, transaction);
+
+                    transaction.Commit();
+                }
             });
 
             HttpContext.Session.SetString("Code", authorizationTokens_Code);
